@@ -48,6 +48,7 @@ function create() {
 
 	player = game.add.sprite(72, 360, 'player');
 	player.anchor.x = 0.5;
+  game.physics.arcade.enable(player);
 
 	game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1);
 
@@ -98,6 +99,7 @@ function decide_whether_to_create_new_space_thing() {
 }
 
 function hit_space_thing(player, space_thing) {
+  space_thing.kill();
 	planet_health = planet_health -1;
 	if (planet_health == 0) {
 		alert("You have died");
@@ -118,7 +120,7 @@ function create_new_space_thing() {
 	var new_space_thing = space_things.create(start_x,100, space_thing_type.name);
 
 	//Enable physics, but don't let it manage the rotation
-	game.physics.enable(new_space_thing, Phaser.Physics.ARCADE);
+	game.physics.arcade.enable(new_space_thing);
 	new_space_thing.body.allowRotation = false;
 	game.physics.arcade.moveToXY(new_space_thing, end_x, 600, 500);
 	new_space_thing.body.collideWorldBounds = true;
