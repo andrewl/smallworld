@@ -1,0 +1,141 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+	<meta charset="UTF-8" />
+	<title>Smallworld</title>
+	<script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var player;
+var planet_health = 3;
+var score = 0;
+var level = 1;
+
+var text;
+var space_things;
+
+var space_thing_types = [];
+
+space_thing_types.push({
+  name: 'comet',
+  image: 'assets/comet.png',
+  min_speed: 50,
+  max_speed: 600
+});
+
+function preload() {
+	game.load.image('player', 'assets/smallworld.png');
+	for (i = 0; i < space_thing_types.length; i++) {
+		game.load.image(space_thing_types[i].name, space_thing_types[i].image);
+	}
+}
+
+function create() {
+	game.world.setBounds(0,0,800,600);
+	game.physics.startSystem(Phaser.Physics.ARCADE);
+
+	frames = Phaser.Animation.generateFrameNames('frame', 2, 30, '', 2);
+	frames.unshift('frame02');
+
+	player = game.add.sprite(72, 360, 'player');
+	player.anchor.x = 0.5;
+
+	game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1);
+
+	cursors = game.input.keyboard.createCursorKeys();
+  space_things = game.add.group();
+  space_things.enableBody = true;
+
+	//decide whether or not to create new space thing every second
+	new_space_thing_timer = game.time.create(false);
+	new_space_thing_timer.loop(1000, decide_whether_to_create_new_space_thing, this);
+	new_space_thing_timer.start();
+
+	text = game.add.text(0, 0, "Score: 0, Health: 3", {
+		font: "20px Arial",
+		fill: "#ff0044",
+		align: "left"
+	});
+}
+
+function update() {
+	game.physics.arcade.overlap(player, space_things, hit_space_thing, null, this);
+	if (cursors.left.isDown && player.x > 72)
+	{
+		player.x -= 8;
+	}
+	else if (cursors.right.isDown && player.x < (800-72))
+	{
+		player.x += 8;
+	}
+
+	if (cursors.up.isDown && player.y > 72)
+	{
+		player.y -= 8;
+	}
+	else if (cursors.down.isDown && player.y < (600-72))
+	{
+		player.y += 8;
+	}
+	text.setText("Score: " + score + " Health: " + planet_health);
+}
+
+function decide_whether_to_create_new_space_thing() {
+	score = score + 1;
+	//@todo this should depend on how far we are in the game
+	if (Math.random() < 0.9) {
+    create_new_space_thing();
+	}
+}
+
+function hit_space_thing(player, space_thing) {
+	planet_health = planet_health -1;
+	if (planet_health == 0) {
+		alert("You have died");
+	}
+}
+
+function create_new_space_thing() {
+	//decide upon what type of space thing to create
+	new_space_thing_index = Math.floor((Math.random() * level) + 1);
+
+	space_thing_type = space_thing_types[new_space_thing_index-1]
+  console.log("Creating a new space thing of type " + space_thing_type.name);
+	min_start_x = player.x
+  start_x = Math.floor((Math.random() * (800-player.x)) + player.x); 
+	end_x = Math.floor((Math.random() * 800));
+  speed = Math.floor((Math.random() * (space_thing_type.max_speed)) + space_thing_type.min_speed); 
+	//new_space_thing = game.add.sprite(start_x,100, space_thing_type.name);
+	var new_space_thing = space_things.create(start_x,100, space_thing_type.name);
+
+	//Enable physics, but don't let it manage the rotation
+	game.physics.enable(new_space_thing, Phaser.Physics.ARCADE);
+	new_space_thing.body.allowRotation = false;
+	game.physics.arcade.moveToXY(new_space_thing, end_x, 600, 500);
+	new_space_thing.body.collideWorldBounds = true;
+	//  By default the Signal is empty, so we create it here:
+	new_space_thing.body.onWorldBounds = new Phaser.Signal();
+
+	//  And then listen for it
+	new_space_thing.body.onWorldBounds.add(hitWorldBounds, this);
+}
+
+function hitWorldBounds(sprite) {
+	sprite.destroy(true);  
+	sprite = null;
+}
+
+
+</script>
+
+</body>
+</html>
