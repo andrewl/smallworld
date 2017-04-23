@@ -21,6 +21,7 @@ var planet_health = 3;
 var score = 0;
 var level = 1;
 var music;
+var starfield;
 
 var text;
 var space_things;
@@ -86,7 +87,7 @@ var loadState = {
 
   preload: function() {
 		game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
-    game.load.image('player', 'assets/smallworld.png');
+    game.load.atlasJSONHash('player', 'assets/Bigworld.png', 'assets/Bigworld.json');
     for (i = 0; i < space_thing_types.length; i++) {
         game.load.image(space_thing_types[i].name, space_thing_types[i].image, space_thing_types[i].image_width, space_thing_types[i].image_height);
     }
@@ -94,6 +95,7 @@ var loadState = {
     game.load.audio('boom', ['assets/boom.ogg']);
     game.load.audio('level_up', ['assets/level_up.ogg']);
     game.load.audio('smallworld', ['assets/smallworld.ogg']);
+    game.load.image('starfield', 'assets/starfield.png');
   },
 
   create: function() {
@@ -139,6 +141,7 @@ var playState = {
 	planet_health_text: planet_health_states[3],
 
   update: function() {
+    starfield.tilePosition.x -= (level*2);
     game.physics.arcade.overlap(player, space_things, this.hit_space_thing, null, this);
     if (cursors.left.isDown && player.x > 72)
     {
@@ -166,6 +169,7 @@ var playState = {
 		level = 1;
     game.world.setBounds(0,0,800,600);
     game.physics.startSystem(Phaser.Physics.ARCADE);
+    starfield = game.add.tileSprite(0, 0, 3200, game.cache.getImage('starfield').height, 'starfield');
 
     frames = Phaser.Animation.generateFrameNames('frame', 2, 30, '', 2);
     frames.unshift('frame02');
@@ -175,6 +179,8 @@ var playState = {
     game.physics.arcade.enable(player);
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1);
+    player.animations.add('animate');
+    player.animations.play('animate', 9, true);
 
     cursors = game.input.keyboard.createCursorKeys();
     space_things = game.add.group();
@@ -191,6 +197,7 @@ var playState = {
       align: "left"
     });
 
+
     music = new Phaser.Sound(game,'smallworld',0.75,true);
     music.play();
   },
@@ -198,7 +205,7 @@ var playState = {
   decide_whether_to_create_new_space_thing: function() {
 
     score = score + 1;
-    if (score % 30 == 0) {
+    if (score % 20 == 0) {
       game.sound.play('level_up');
       if (planet_health < 3) {
         planet_health = planet_health+1;
