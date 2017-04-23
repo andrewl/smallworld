@@ -1,4 +1,3 @@
-<!doctype html> 
 <html lang="en"> 
 <head> 
 	<meta charset="UTF-8" />
@@ -31,50 +30,43 @@ var space_thing_types = [];
 var planet_health_states = ["0: Boom!","1: Core about to blow!", "2: Crust compromised!", "3: All OK"];
 
 space_thing_types.push({
-  name: 'alien',
-  image: 'assets/alien.png',
-  image_width: 32,
-  image_height: 32,
-  min_speed: 50,
-  max_speed: 200 
-});
-
-space_thing_types.push({
-  name: 'comet',
-  image: 'assets/comet.png',
-  image_width: 32,
-  image_height: 32,
-  min_speed: 50,
-  max_speed: 600
-});
-
-
-space_thing_types.push({
-  name: 'space_dust',
-  image: 'assets/comet.png',
-  image_width: 32,
-  image_height: 32,
-  min_speed: 50,
-  max_speed: 600
-});
-
-space_thing_types.push({
-  name: 'asteroid',
-  image: 'assets/comet.png',
+  name: 'Asteroid',
+  image: 'asteroid',
   image_width: 64,
   image_height: 32,
   min_speed: 200,
-  max_speed: 400 
+  max_speed: 800 
 });
 
 space_thing_types.push({
-  name: 'planet',
-  image: 'assets/comet.png',
+  name: 'Comet',
+  image: 'comet',
+  image_width: 32,
+  image_height: 32,
+  min_speed: 400,
+  max_speed: 900
+});
+
+
+space_thing_types.push({
+  name: 'Planet',
+  image: 'planet',
+  image_width: 32,
+  image_height: 32,
+  min_speed: 40,
+  max_speed: 80 
+});
+
+space_thing_types.push({
+  name: 'Alien',
+  image: 'alien',
   image_width: 32,
   image_height: 32,
   min_speed: 50,
-  max_speed: 60 
+  max_speed: 600 
 });
+
+
 
 WebFontConfig = {
     google: {
@@ -89,9 +81,11 @@ var loadState = {
 		game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
     game.load.atlasJSONHash('player', 'assets/Bigworld.png', 'assets/Bigworld.json');
     for (i = 0; i < space_thing_types.length; i++) {
-        game.load.image(space_thing_types[i].name, space_thing_types[i].image, space_thing_types[i].image_width, space_thing_types[i].image_height);
+        game.load.atlasJSONHash(space_thing_types[i].name,
+                                'assets/' + space_thing_types[i].image + '.png',
+                                'assets/' + space_thing_types[i].image + '.json');
+
     }
-    game.load.atlasJSONHash('alien', 'assets/Alien.png', 'assets/Alien.json');
     game.load.audio('boom', ['assets/boom.ogg']);
     game.load.audio('level_up', ['assets/level_up.ogg']);
     game.load.audio('smallworld', ['assets/smallworld.ogg']);
@@ -108,7 +102,7 @@ var menuState = {
 
   create: function() {
 
-    text = game.add.text(game.world.centerX, game.world.centerY, "SmallWorld\n[Made with Real Science]\nGuide your Small World\nthrough time avoiding comets\n, aliens, asteroids\nand other space things.\nPress 'S' to start");
+    text = game.add.text(game.world.centerX, game.world.centerY, "SmallWorld\n[Made with Real Science]\nGuide your Small World\nthrough time avoiding asteroids,\ncomets, aliens\nand other space-y things.\nPress 'S' to start");
     text.anchor.setTo(0.5);
 
     text.font = 'Orbitron';
@@ -160,11 +154,12 @@ var playState = {
     {
       player.y += 8;
     }
-    text.setText("Score: " + score + "\nHealth: " + this.planet_health_text);
+    text.setText("Planet Age: " + (score/20) + " billion years\nPlanet Integrity: " + this.planet_health_text);
   },
 
   create: function () {
 		planet_health = 3;
+	  this.planet_health_text = planet_health_states[planet_health];
 		score = 0;
 		level = 1;
     game.world.setBounds(0,0,800,600);
@@ -180,7 +175,7 @@ var playState = {
 
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1);
     player.animations.add('animate');
-    player.animations.play('animate', 9, true);
+    player.animations.play('animate', 12, true);
 
     cursors = game.input.keyboard.createCursorKeys();
     space_things = game.add.group();
@@ -214,7 +209,7 @@ var playState = {
       level = level + 1;
     }
     //@todo this should depend on how far we are in the game
-    if (Math.random() < (0.4 + (level/10))) {
+    if (Math.random() < (0.6 + (level/10))) {
       this.create_new_space_thing();
     }
   },
@@ -232,25 +227,21 @@ var playState = {
 
   create_new_space_thing: function() {
     //decide upon what type of space thing to create
-    new_space_thing_index = Math.floor((Math.random() * level) + 1);
+    new_space_thing_index = Math.floor((Math.random() * Math.min(level, space_thing_types.length)) + 1);
 
     space_thing_type = space_thing_types[new_space_thing_index-1]
-      console.log("Creating a new space thing of type " + space_thing_type.name);
     min_start_x = player.x
-      start_y = Math.floor(Math.random() * 600);
+    start_y = Math.floor(Math.random() * 600);
     end_y = Math.floor(Math.random() * 600);
-    console.log(start_y, end_y);
-    //end_y = Math.floor((Math.random() * 300) + 300);
     speed = Math.floor((Math.random() * (space_thing_type.max_speed)) + space_thing_type.min_speed); 
-    //new_space_thing = game.add.sprite(start_x,100, space_thing_type.name);
     var new_space_thing = space_things.create(700, start_y, space_thing_type.name);
 
     var animate = new_space_thing.animations.add('animate');
-    new_space_thing.animations.play('animate', 24, true);
+    new_space_thing.animations.play('animate', 8, true);
     //Enable physics, but don't let it manage the rotation
     game.physics.arcade.enable(new_space_thing);
     new_space_thing.body.allowRotation = false;
-    game.physics.arcade.moveToXY(new_space_thing, 0, end_y, 500);
+    game.physics.arcade.moveToXY(new_space_thing, 0, end_y, speed);
     new_space_thing.body.collideWorldBounds = true;
     //  By default the Signal is empty, so we create it here:
     new_space_thing.body.onWorldBounds = new Phaser.Signal();
@@ -270,7 +261,10 @@ var endState = {
 
   create: function() {
 
-    text = game.add.text(game.world.centerX, game.world.centerY, "Sadly your planet exploded\nafter " + score + " seconds\n\nPress 'S' to restart");
+    adjectives = ["an amazing", "a stunning", "a poor", "a terrible", "a pathetic", "a paltry", "a superb", "a wonderful"];
+    adjective = adjectives[Math.floor((Math.random() * adjectives.length))];
+
+    text = game.add.text(game.world.centerX, game.world.centerY, "Sadly your planet exploded\nafter " + adjective + "\n" + (score/20) + " billion years\n\nPress 'S' to restart");
     text.anchor.setTo(0.5);
 
     text.font = 'Orbitron';
