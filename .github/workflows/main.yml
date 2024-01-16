@@ -1,25 +1,28 @@
-name: Deploy
+name: itch.io upload
 
-on: push
+on:
+  push:
+    paths:
+      - "version"
+      - ".github/workflows/upload-itchio.yml"
+      - "export_presets.html.example"
+
 env:
-  ITCH_USERNAME: 4ndrewl
-  ITCH_GAME_ID: smallworld
+  WORKING_DIRECTORY: .
+
 jobs:
   deploy:
-    name: Upload to Itch
-    strategy:
-      fail-fast: true
+    if: github.ref == 'refs/heads/prod'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v2.0.8
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Upload to itch.io
+        uses: dulvui/itchio-butler-upload@v0.0.1
         with:
-          name: 'html5'
-          path: build
-      - uses: KikimoraGames/itch-publish@v0.0.3
-        with:
-          butlerApiKey: ${{secrets.BUTLER_API_KEY}}
-          gameData: ./build
-          itchUsername: ${{env.ITCH_USERNAME}}
-          itchGameId: ${{ env.ITCH_GAME_ID }}
-          buildChannel: 'html5'
-          buildNumber: ${{ needs.version.outputs.version_hash }}
+          working-directory: .
+          api-key: ${{ secrets.ITCHIO_API_KEY }}
+          user: 4ndrewl
+          game: smallworld
+          channel: html5
