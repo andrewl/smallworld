@@ -8,7 +8,7 @@ on:
       - "export_presets.html.example"
 
 env:
-  WORKING_DIRECTORY: .
+  WORKING_DIRECTORY: docroot
 
 jobs:
   deploy:
