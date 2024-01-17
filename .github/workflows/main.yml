@@ -2,17 +2,14 @@ name: itch.io upload
 
 on:
   push:
-    paths:
-      - "version"
-      - ".github/workflows/upload-itchio.yml"
-      - "export_presets.html.example"
+    branches:
+      - master
 
 env:
   WORKING_DIRECTORY: docroot
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/prod'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
