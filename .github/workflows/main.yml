@@ -21,7 +21,7 @@ jobs:
       - name: Upload to itch.io
         uses: dulvui/itchio-butler-upload@v0.0.1
         with:
-          working-directory: .
+          working-directory: docroot
           api-key: ${{ secrets.ITCHIO_API_KEY }}
           user: 4ndrewl
           game: smallworld
